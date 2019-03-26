@@ -6,17 +6,20 @@ using System.Windows.Forms;
 
 namespace TodoListManager
 {
-	static class Program
+	public static class Program
 	{
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
 		[STAThread]
-		static void Main()
+		public static void Main(string[] args)
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new MainForm());
+			MainForm form = new MainForm();
+			if (args.Length > 0)
+				form.Open(args[0]);
+			Application.Run(form);
 		}
 	}
 }

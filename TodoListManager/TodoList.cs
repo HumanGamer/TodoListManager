@@ -10,6 +10,7 @@ namespace TodoListManager
 	public class TodoList
 	{
 		public List<TodoListItem> Items;
+		public bool Dirty;
 
 		public TodoList()
 		{
@@ -42,6 +43,8 @@ namespace TodoListManager
 				}
 			}
 
+			Dirty = false;
+
 			return true;
 		}
 
@@ -60,6 +63,8 @@ namespace TodoListManager
 					bw.Write(item.Done);
 				}
 			}
+
+			Dirty = false;
 		}
 
 	}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,10 @@ namespace TodoListManager
 {
 	public partial class MainForm : Form
 	{
+		private const string BaseTitle = "Todo List Manager";
+		
 		private TodoList _todoList;
+		private string _path;
 
 		public MainForm()
 		{
@@ -28,11 +32,13 @@ namespace TodoListManager
 			if (_todoList == null)
 			{
 				Enable = false;
+				UpdateTitle();
 				return;
 			}
-
+			
 			Enable = true;
 
+			bool dirty = _todoList.Dirty;
 			for (int i = 0; i < _todoList.Items.Count; i++)
 			{
 				TodoListItem item = _todoList.Items[i];
@@ -43,6 +49,36 @@ namespace TodoListManager
 				});
 				lstItem.Checked = item.Done;
 				lstMain.Items.Add(lstItem);
+			}
+
+			_todoList.Dirty = dirty;
+			UpdateTitle();
+		}
+
+		private void UpdateTitle()
+		{
+			if (_todoList == null)
+				Text = BaseTitle;
+			else
+				Text = BaseTitle + " - [" + (_path ?? "Untitled Todo List") + (_todoList.Dirty ? "*" : "") + "]";
+		}
+
+		private bool ShouldCloseFile()
+		{
+			if (_todoList == null || !_todoList.Dirty)
+				return true;
+
+			DialogResult result = MessageBox.Show(this,
+				"There are unsaved changes in this file.\n\nWould you like to save your changes?", "Save?",
+				MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+			switch (result)
+			{
+				case DialogResult.Yes:
+					return Save();
+				case DialogResult.No:
+					return true;
+				default: // Cancel or close
+					return false;
 			}
 		}
 
@@ -79,47 +115,82 @@ namespace TodoListManager
 
 		private void New()
 		{
+			if (!ShouldCloseFile())
+				return;
+
 			_todoList = new TodoList();
+			_path = null;
 			UpdateDisplay();
 		}
 
 		private void Open()
 		{
+			if (!ShouldCloseFile())
+				return;
+
 			OpenFileDialog ofd = new OpenFileDialog();
 			ofd.Filter = "Todo Lists|*.todo|All Files|*.*";
 			DialogResult result = ofd.ShowDialog(this);
 			if (result == DialogResult.OK)
 			{
-				_todoList = TodoList.ReadTodoList(ofd.FileName);
-				UpdateDisplay();
+				Open(ofd.FileName);
 			}
 		}
 
-		private void Save()
+		public void Open(string path)
 		{
-			if (_todoList == null)
-				return;
-
-			SaveAs();
+			_todoList = TodoList.ReadTodoList(path);
+			_path = path;
+			UpdateDisplay();
 		}
 
-		private void SaveAs()
+		private bool Save()
 		{
 			if (_todoList == null)
-				return;
+				return false;
+
+			if (string.IsNullOrWhiteSpace(_path))
+				return SaveAs();
+			else
+				return Save(_path);
+		}
+
+		private bool SaveAs()
+		{
+			if (_todoList == null)
+				return false;
 
 			SaveFileDialog sfd = new SaveFileDialog();
 			sfd.Filter = "Todo Lists|*.todo|All Files|*.*";
 			DialogResult result = sfd.ShowDialog(this);
 			if (result == DialogResult.OK)
 			{
-				_todoList.Write(sfd.FileName);
+				return Save(sfd.FileName);
 			}
+
+			return false;
+		}
+
+		private bool Save(string path)
+		{
+			if (_todoList == null)
+				return false;
+
+			_todoList.Write(path);
+			_path = path;
+
+			UpdateTitle();
+
+			return true;
 		}
 
 		private void CloseFile()
 		{
+			if (!ShouldCloseFile())
+				return;
+
 			_todoList = null;
+			_path = null;
 			UpdateDisplay();
 		}
 
@@ -171,7 +242,10 @@ namespace TodoListManager
 
 			AddTaskDialog dlg = new AddTaskDialog();
 			dlg.ShowDialog(this);
+			if (dlg.Item == null || string.IsNullOrWhiteSpace(dlg.Item.Text))
+				return;
 			_todoList.Items.Add(dlg.Item);
+			_todoList.Dirty = true;
 			UpdateDisplay();
 		}
 
@@ -185,12 +259,13 @@ namespace TodoListManager
 
 			int index = lstMain.SelectedIndices[0];
 			_todoList.Items.RemoveAt(index);
+			_todoList.Dirty = true;
 			UpdateDisplay();
 		}
 
 		public void About()
 		{
-			MessageBox.Show(this, "Created by HumanGamer", "About");
+			MessageBox.Show(this, "Created by HumanGamer", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		#region Menu Event Handlers
@@ -328,6 +403,8 @@ namespace TodoListManager
 				return;
 			_todoList.Items[index].Done = e.NewValue == CheckState.Checked;
 			lstMain.Items[index].Text = _todoList.Items[index].Done.ToString();
+			_todoList.Dirty = true;
+			UpdateTitle();
 		}
 
 		private void lstMain_SelectedIndexChanged(object sender, EventArgs e)
@@ -335,7 +412,12 @@ namespace TodoListManager
 			bool hasSelection = lstMain.SelectedIndices.Count > 0;
 			removeItemToolStripMenuItem.Enabled = hasSelection;
 			tsbRemoveItem.Enabled = hasSelection;
+		}
 
+		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (!ShouldCloseFile())
+				e.Cancel = true;
 		}
 	}
 }
