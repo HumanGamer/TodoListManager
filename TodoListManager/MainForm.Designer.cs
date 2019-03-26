@@ -498,6 +498,7 @@
 			this.Name = "MainForm";
 			this.Text = "Todo List Manager";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.mnuMain.ResumeLayout(false);
 			this.mnuMain.PerformLayout();
 			this.tspMain.ResumeLayout(false);

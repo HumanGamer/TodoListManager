@@ -14,7 +14,9 @@ namespace TodoListManager
 	public partial class MainForm : Form
 	{
 		private const string BaseTitle = "Todo List Manager";
-		
+
+		private bool _loaded;
+		private bool _updatingDisplay;
 		private TodoList _todoList;
 		private string _path;
 
@@ -27,18 +29,20 @@ namespace TodoListManager
 
 		private void UpdateDisplay()
 		{
+			_updatingDisplay = true;
 			lstMain.Items.Clear();
 
 			if (_todoList == null)
 			{
 				Enable = false;
 				UpdateTitle();
+
+				_updatingDisplay = false;
 				return;
 			}
 			
 			Enable = true;
-
-			bool dirty = _todoList.Dirty;
+			
 			for (int i = 0; i < _todoList.Items.Count; i++)
 			{
 				TodoListItem item = _todoList.Items[i];
@@ -50,9 +54,10 @@ namespace TodoListManager
 				lstItem.Checked = item.Done;
 				lstMain.Items.Add(lstItem);
 			}
-
-			_todoList.Dirty = dirty;
+			
 			UpdateTitle();
+
+			_updatingDisplay = false;
 		}
 
 		private void UpdateTitle()
@@ -403,7 +408,8 @@ namespace TodoListManager
 				return;
 			_todoList.Items[index].Done = e.NewValue == CheckState.Checked;
 			lstMain.Items[index].Text = _todoList.Items[index].Done.ToString();
-			_todoList.Dirty = true;
+			if (!_updatingDisplay && _loaded)
+				_todoList.Dirty = true;
 			UpdateTitle();
 		}
 
@@ -412,6 +418,11 @@ namespace TodoListManager
 			bool hasSelection = lstMain.SelectedIndices.Count > 0;
 			removeItemToolStripMenuItem.Enabled = hasSelection;
 			tsbRemoveItem.Enabled = hasSelection;
+		}
+
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			_loaded = true;
 		}
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
