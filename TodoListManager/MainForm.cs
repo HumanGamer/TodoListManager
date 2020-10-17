@@ -40,21 +40,21 @@ namespace TodoListManager
 				_updatingDisplay = false;
 				return;
 			}
-			
+
 			Enable = true;
-			
+
 			for (int i = 0; i < _todoList.Items.Count; i++)
 			{
 				TodoListItem item = _todoList.Items[i];
 				ListViewItem lstItem = new ListViewItem(new[]
 				{
-					item.Done.ToString(),
-					item.Text
+					item.Text,
+					item.Done.ToString()
 				});
 				lstItem.Checked = item.Done;
 				lstMain.Items.Add(lstItem);
 			}
-			
+
 			UpdateTitle();
 
 			_updatingDisplay = false;
