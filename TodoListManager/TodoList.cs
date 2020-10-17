@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,21 +28,7 @@ namespace TodoListManager
 
 		private bool Read(string path)
 		{
-			using (Stream s = File.OpenRead(path))
-			using (BinaryReader br = new BinaryReader(s))
-			{
-				string magic = Encoding.ASCII.GetString(br.ReadBytes(4));
-				if (magic != "TODO")
-					return false;
-
-				int count = br.ReadInt32();
-				for (int i = 0; i < count; i++)
-				{
-					string text = br.ReadString();
-					bool done = br.ReadBoolean();
-					Items.Add(new TodoListItem(text, done));
-				}
-			}
+			Items = JsonConvert.DeserializeObject<List<TodoListItem>>(File.ReadAllText(path));
 
 			Dirty = false;
 
@@ -50,19 +37,7 @@ namespace TodoListManager
 
 		public void Write(string path)
 		{
-			using (Stream s = File.Open(path, FileMode.Create))
-			using (BinaryWriter bw = new BinaryWriter(s))
-			{
-				bw.Write(Encoding.ASCII.GetBytes("TODO"));
-
-				bw.Write(Items.Count);
-				for (int i = 0; i < Items.Count; i++)
-				{
-					TodoListItem item = Items[i];
-					bw.Write(item.Text);
-					bw.Write(item.Done);
-				}
-			}
+			File.WriteAllText(path, JsonConvert.SerializeObject(Items));
 
 			Dirty = false;
 		}
