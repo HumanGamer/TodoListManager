@@ -31,6 +31,7 @@ namespace TodoListManager
 		{
 			_updatingDisplay = true;
 			lstMain.Items.Clear();
+			tdoMain.TodoList = null;
 
 			if (_todoList == null)
 			{
@@ -42,6 +43,8 @@ namespace TodoListManager
 			}
 
 			Enable = true;
+
+			tdoMain.TodoList = _todoList;
 
 			for (int i = 0; i < _todoList.Items.Count; i++)
 			{
@@ -407,7 +410,7 @@ namespace TodoListManager
 			if (_todoList == null || index < 0 || index >= _todoList.Items.Count)
 				return;
 			_todoList.Items[index].Done = e.NewValue == CheckState.Checked;
-			lstMain.Items[index].Text = _todoList.Items[index].Done.ToString();
+			lstMain.Items[index].SubItems[1].Text = _todoList.Items[index].Done.ToString();
 			if (!_updatingDisplay && _loaded)
 				_todoList.Dirty = true;
 			UpdateTitle();

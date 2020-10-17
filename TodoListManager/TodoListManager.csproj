@@ -65,6 +65,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TodoList.cs" />
     <Compile Include="TodoListItem.cs" />
+    <Compile Include="TodoListUI.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <EmbeddedResource Include="AddTaskDialog.resx">
       <DependentUpon>AddTaskDialog.cs</DependentUpon>
     </EmbeddedResource>

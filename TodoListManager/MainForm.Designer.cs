@@ -75,8 +75,15 @@
             this.lstMain = new System.Windows.Forms.ListView();
             this.colTask = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDone = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tbcMain = new System.Windows.Forms.TabControl();
+            this.tabOldUI = new System.Windows.Forms.TabPage();
+            this.tabNewUI = new System.Windows.Forms.TabPage();
+            this.tdoMain = new TodoListManager.TodoListUI();
             this.mnuMain.SuspendLayout();
             this.tspMain.SuspendLayout();
+            this.tbcMain.SuspendLayout();
+            this.tabOldUI.SuspendLayout();
+            this.tabNewUI.SuspendLayout();
             this.SuspendLayout();
             // 
             // mnuMain
@@ -466,10 +473,10 @@
             this.lstMain.FullRowSelect = true;
             this.lstMain.GridLines = true;
             this.lstMain.HideSelection = false;
-            this.lstMain.Location = new System.Drawing.Point(0, 49);
+            this.lstMain.Location = new System.Drawing.Point(3, 3);
             this.lstMain.MultiSelect = false;
             this.lstMain.Name = "lstMain";
-            this.lstMain.Size = new System.Drawing.Size(784, 490);
+            this.lstMain.Size = new System.Drawing.Size(770, 458);
             this.lstMain.TabIndex = 3;
             this.lstMain.UseCompatibleStateImageBehavior = false;
             this.lstMain.View = System.Windows.Forms.View.Details;
@@ -485,12 +492,53 @@
             // 
             this.colDone.Text = "Done";
             // 
+            // tbcMain
+            // 
+            this.tbcMain.Controls.Add(this.tabNewUI);
+            this.tbcMain.Controls.Add(this.tabOldUI);
+            this.tbcMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbcMain.Location = new System.Drawing.Point(0, 49);
+            this.tbcMain.Name = "tbcMain";
+            this.tbcMain.SelectedIndex = 0;
+            this.tbcMain.Size = new System.Drawing.Size(784, 490);
+            this.tbcMain.TabIndex = 4;
+            // 
+            // tabOldUI
+            // 
+            this.tabOldUI.Controls.Add(this.lstMain);
+            this.tabOldUI.Location = new System.Drawing.Point(4, 22);
+            this.tabOldUI.Name = "tabOldUI";
+            this.tabOldUI.Padding = new System.Windows.Forms.Padding(3);
+            this.tabOldUI.Size = new System.Drawing.Size(776, 464);
+            this.tabOldUI.TabIndex = 0;
+            this.tabOldUI.Text = "Old UI";
+            this.tabOldUI.UseVisualStyleBackColor = true;
+            // 
+            // tabNewUI
+            // 
+            this.tabNewUI.Controls.Add(this.tdoMain);
+            this.tabNewUI.Location = new System.Drawing.Point(4, 22);
+            this.tabNewUI.Name = "tabNewUI";
+            this.tabNewUI.Padding = new System.Windows.Forms.Padding(3);
+            this.tabNewUI.Size = new System.Drawing.Size(776, 464);
+            this.tabNewUI.TabIndex = 1;
+            this.tabNewUI.Text = "New UI";
+            this.tabNewUI.UseVisualStyleBackColor = true;
+            // 
+            // tdoMain
+            // 
+            this.tdoMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tdoMain.Location = new System.Drawing.Point(3, 3);
+            this.tdoMain.Name = "tdoMain";
+            this.tdoMain.Size = new System.Drawing.Size(770, 458);
+            this.tdoMain.TabIndex = 0;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
-            this.Controls.Add(this.lstMain);
+            this.Controls.Add(this.tbcMain);
             this.Controls.Add(this.tspMain);
             this.Controls.Add(this.stsMain);
             this.Controls.Add(this.mnuMain);
@@ -503,6 +551,9 @@
             this.mnuMain.PerformLayout();
             this.tspMain.ResumeLayout(false);
             this.tspMain.PerformLayout();
+            this.tbcMain.ResumeLayout(false);
+            this.tabOldUI.ResumeLayout(false);
+            this.tabNewUI.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -556,6 +607,10 @@
 		private System.Windows.Forms.ToolStripMenuItem removeItemToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem closeFileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem6;
-	}
+        private System.Windows.Forms.TabControl tbcMain;
+        private System.Windows.Forms.TabPage tabNewUI;
+        private System.Windows.Forms.TabPage tabOldUI;
+        private TodoListUI tdoMain;
+    }
 }
 
