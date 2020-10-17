@@ -10,34 +10,31 @@ namespace TodoListManager
 {
 	public class TodoList
 	{
+		public Guid id;
 		public List<TodoListItem> Items;
+
+		[JsonIgnore]
 		public bool Dirty;
 
 		public TodoList()
 		{
+			id = Guid.NewGuid();
 			Items = new List<TodoListItem>();
 		}
 
 		public static TodoList ReadTodoList(string path)
 		{
-			TodoList result = new TodoList();
-			if (!result.Read(path))
-				return null;
-			return result;
+			return FromJSON(File.ReadAllText(path));
 		}
 
-		private bool Read(string path)
-		{
-			Items = JsonConvert.DeserializeObject<List<TodoListItem>>(File.ReadAllText(path));
-
-			Dirty = false;
-
-			return true;
-		}
+		public static TodoList FromJSON(string json)
+        {
+			return JsonConvert.DeserializeObject<TodoList>(json);
+        }
 
 		public void Write(string path)
 		{
-			File.WriteAllText(path, JsonConvert.SerializeObject(Items));
+			File.WriteAllText(path, JsonConvert.SerializeObject(this));
 
 			Dirty = false;
 		}
