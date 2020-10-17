@@ -12,10 +12,13 @@ namespace TodoListManager
 
 		public bool Done { get; set; }
 
-		public TodoListItem(string text, bool done = false)
+		public List<TodoListItem> SubItems { get; set; }
+
+		public TodoListItem(string text, bool done, params TodoListItem[] subitems)
 		{
 			Text = text;
 			Done = done;
+			SubItems = subitems.ToList();
 		}
 	}
 }

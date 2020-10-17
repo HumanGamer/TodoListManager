@@ -25,7 +25,7 @@ namespace TodoListManager
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			Item = new TodoListItem(txtText.Text);
+			Item = new TodoListItem(txtText.Text, false);
 			Close();
 		}
 
