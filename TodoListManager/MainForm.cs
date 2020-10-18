@@ -30,8 +30,7 @@ namespace TodoListManager
 		private void UpdateDisplay()
 		{
 			_updatingDisplay = true;
-			lstMain.Items.Clear();
-			tdoMain.TodoList = null;
+			trvMain.Nodes.Clear();
 
 			if (_todoList == null)
 			{
@@ -44,18 +43,21 @@ namespace TodoListManager
 
 			Enable = true;
 
-			tdoMain.TodoList = _todoList;
-
 			for (int i = 0; i < _todoList.Items.Count; i++)
 			{
 				TodoListItem item = _todoList.Items[i];
-				ListViewItem lstItem = new ListViewItem(new[]
+
+				TreeNode[] subItems = new TreeNode[item.SubItems.Count];
+				for (int j = 0; j < subItems.Length; j++)
 				{
-					item.Text,
-					item.Done.ToString()
-				});
-				lstItem.Checked = item.Done;
-				lstMain.Items.Add(lstItem);
+					var node2 = new TreeNode(item.SubItems[j].Text);
+					node2.Checked = item.SubItems[j].Done;
+					subItems[j] = node2;
+                }
+
+				var node = new TreeNode(item.Text, subItems);
+				node.Checked = item.Done;
+				trvMain.Nodes.Add(node);
 			}
 
 			UpdateTitle();
@@ -98,7 +100,7 @@ namespace TodoListManager
 			set
 			{
 				_enable = value;
-				lstMain.Enabled = _enable;
+				trvMain.Enabled = _enable;
 				addItemToolStripMenuItem.Enabled = _enable;
 				removeItemToolStripMenuItem.Enabled = false; //_enable;
 				tsbAddItem.Enabled = _enable;
@@ -243,6 +245,20 @@ namespace TodoListManager
 				return;
 		}
 
+		private void AddSubItem()
+        {
+			if (_todoList == null || trvMain.SelectedNode == null)
+				return;
+
+			AddTaskDialog dlg = new AddTaskDialog();
+			dlg.ShowDialog(this);
+			if (dlg.Item == null || string.IsNullOrWhiteSpace(dlg.Item.Text))
+				return;
+			_todoList.Items[trvMain.SelectedNode.Index].SubItems.Add(dlg.Item);
+			_todoList.Dirty = true;
+			UpdateDisplay();
+		}
+
 		private void AddItem()
 		{
 			if (_todoList == null)
@@ -262,10 +278,10 @@ namespace TodoListManager
 			if (_todoList == null)
 				return;
 
-			if (lstMain.SelectedIndices.Count <= 0)
+			if (trvMain.SelectedNode == null)
 				return;
 
-			int index = lstMain.SelectedIndices[0];
+			int index = trvMain.SelectedNode.Index;
 			_todoList.Items.RemoveAt(index);
 			_todoList.Dirty = true;
 			UpdateDisplay();
@@ -342,6 +358,11 @@ namespace TodoListManager
 			AddItem();
 		}
 
+		private void addSubItemToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			AddSubItem();
+		}
+
 		private void removeItemToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			RemoveItem();
@@ -397,6 +418,11 @@ namespace TodoListManager
 			AddItem();
 		}
 
+		private void tspAddSubItem_Click(object sender, EventArgs e)
+		{
+			AddSubItem();
+		}
+
 		private void tsbRemoveItem_Click(object sender, EventArgs e)
 		{
 			RemoveItem();
@@ -404,21 +430,25 @@ namespace TodoListManager
 
 		#endregion
 
-		private void lstMain_ItemCheck(object sender, ItemCheckEventArgs e)
+		private void trvMain_AfterCheck(object sender, TreeViewEventArgs e)
 		{
-			int index = e.Index;
-			if (_todoList == null || index < 0 || index >= _todoList.Items.Count)
+			var node = e.Node;
+			if (_todoList == null || node == null)
 				return;
-			_todoList.Items[index].Done = e.NewValue == CheckState.Checked;
-			lstMain.Items[index].SubItems[1].Text = _todoList.Items[index].Done.ToString();
+			_todoList.Items[node.Index].Done = e.Node.Checked;
 			if (!_updatingDisplay && _loaded)
 				_todoList.Dirty = true;
 			UpdateTitle();
 		}
 
-		private void lstMain_SelectedIndexChanged(object sender, EventArgs e)
+		public static IEnumerable<TreeNode> EnumerateNodes(TreeNode node)
+        {
+			return null;
+        }
+
+		private void trvMain_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			bool hasSelection = lstMain.SelectedIndices.Count > 0;
+			bool hasSelection = trvMain.SelectedNode != null;
 			removeItemToolStripMenuItem.Enabled = hasSelection;
 			tsbRemoveItem.Enabled = hasSelection;
 		}
@@ -433,5 +463,5 @@ namespace TodoListManager
 			if (!ShouldCloseFile())
 				e.Cancel = true;
 		}
-	}
+    }
 }
