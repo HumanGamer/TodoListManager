@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,12 @@ namespace TodoListManager
 {
 	public class TodoListItem
 	{
+		[JsonIgnore]
+		public TodoListItem Parent;
+
+		[JsonIgnore]
+		public int Index;
+
 		public Guid ID { get; set; }
 
 		public string Text { get; set; }
@@ -16,9 +23,11 @@ namespace TodoListManager
 
 		public List<TodoListItem> SubItems { get; set; }
 
-		public TodoListItem(string text, bool done, params TodoListItem[] subitems)
+		public TodoListItem(TodoListItem parent, int index, string text, bool done, params TodoListItem[] subitems)
 		{
 			ID = Guid.NewGuid();
+			Parent = parent;
+			Index = index;
 			Text = text;
 			Done = done;
 			SubItems = subitems.ToList();

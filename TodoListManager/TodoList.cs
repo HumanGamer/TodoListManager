@@ -29,8 +29,23 @@ namespace TodoListManager
 
 		public static TodoList FromJSON(string json)
         {
-			return JsonConvert.DeserializeObject<TodoList>(json);
+			TodoList todo = JsonConvert.DeserializeObject<TodoList>(json);
+
+			Initialize(todo.Items);
+
+			return todo;
         }
+
+		public static void Initialize(List<TodoListItem> items, TodoListItem parent = null)
+		{
+			for (int i = 0; i < items.Count; i++)
+			{
+				TodoListItem item = items[i];
+				item.Index = i;
+				item.Parent = parent;
+				Initialize(item.SubItems, item);
+			}
+		}
 
 		public void Write(string path)
 		{

@@ -43,22 +43,9 @@ namespace TodoListManager
 
 			Enable = true;
 
-			for (int i = 0; i < _todoList.Items.Count; i++)
-			{
-				TodoListItem item = _todoList.Items[i];
+			trvMain.Nodes.AddRange(ToTree(_todoList.Items));
 
-				TreeNode[] subItems = new TreeNode[item.SubItems.Count];
-				for (int j = 0; j < subItems.Length; j++)
-				{
-					var node2 = new TreeNode(item.SubItems[j].Text);
-					node2.Checked = item.SubItems[j].Done;
-					subItems[j] = node2;
-                }
-
-				var node = new TreeNode(item.Text, subItems);
-				node.Checked = item.Done;
-				trvMain.Nodes.Add(node);
-			}
+			trvMain.ExpandAll();
 
 			UpdateTitle();
 
@@ -251,10 +238,11 @@ namespace TodoListManager
 				return;
 
 			AddTaskDialog dlg = new AddTaskDialog();
+			dlg.ParentItem = GetItem(trvMain.SelectedNode);
 			dlg.ShowDialog(this);
 			if (dlg.Item == null || string.IsNullOrWhiteSpace(dlg.Item.Text))
 				return;
-			_todoList.Items[trvMain.SelectedNode.Index].SubItems.Add(dlg.Item);
+			GetItem(trvMain.SelectedNode).SubItems.Add(dlg.Item);
 			_todoList.Dirty = true;
 			UpdateDisplay();
 		}
@@ -281,8 +269,15 @@ namespace TodoListManager
 			if (trvMain.SelectedNode == null)
 				return;
 
-			int index = trvMain.SelectedNode.Index;
-			_todoList.Items.RemoveAt(index);
+			var item = GetItem(trvMain.SelectedNode);
+			if (item.Parent == null)
+			{
+				int index = trvMain.SelectedNode.Index;
+				_todoList.Items.RemoveAt(index);
+			} else
+            {
+				item.Parent.SubItems.RemoveAt(item.Index);
+            }
 			_todoList.Dirty = true;
 			UpdateDisplay();
 		}
@@ -435,16 +430,11 @@ namespace TodoListManager
 			var node = e.Node;
 			if (_todoList == null || node == null)
 				return;
-			_todoList.Items[node.Index].Done = e.Node.Checked;
+			GetItem(node).Done = e.Node.Checked;
 			if (!_updatingDisplay && _loaded)
 				_todoList.Dirty = true;
 			UpdateTitle();
 		}
-
-		public static IEnumerable<TreeNode> EnumerateNodes(TreeNode node)
-        {
-			return null;
-        }
 
 		private void trvMain_AfterSelect(object sender, TreeViewEventArgs e)
 		{
@@ -463,5 +453,58 @@ namespace TodoListManager
 			if (!ShouldCloseFile())
 				e.Cancel = true;
 		}
-    }
+
+		public TodoListItem GetItem(TreeNode node)
+		{
+			IEnumerable<TreeNode> nodes = EnumerateNodes(node);
+			TodoListItem item = _todoList.Items[nodes.First().Index];
+
+			foreach (TreeNode node2 in nodes.Skip(1))
+			{
+				item = item.SubItems[node2.Index];
+			}
+			return item;
+		}
+
+		public static IEnumerable<TreeNode> EnumerateNodes(TreeNode node)
+		{
+			if (node is null) { yield break; }
+			foreach (var n in EnumerateNodes(node.Parent as TreeNode))
+			{
+				yield return n;
+			}
+			yield return node;
+		}
+
+		public TreeNode GetNode(TodoListItem item)
+		{
+			IEnumerable<TodoListItem> items = EnumerateItems(item);
+			TreeNode node = trvMain.Nodes[items.First().Index];
+
+			foreach (TodoListItem item2 in items.Skip(1))
+			{
+				node = node.Nodes[item2.Index];
+			}
+			return node;
+		}
+
+		public static IEnumerable<TodoListItem> EnumerateItems(TodoListItem item)
+		{
+			if (item is null) { yield break; }
+			foreach (var n in EnumerateItems(item.Parent as TodoListItem))
+			{
+				yield return n;
+			}
+			yield return item;
+		}
+
+		public static TreeNode[] ToTree(List<TodoListItem> items, TodoListItem parent = null)
+		{
+			if (items is null || items.Count == 0) { return new TreeNode[0]; }
+			return Enumerable.Range(0, items.Count).Select(i => new TreeNode(items[i].Text, ToTree(items[i].SubItems, items[i]))
+			{
+				Checked = items[i].Done
+			}).ToArray();
+		}
+	}
 }

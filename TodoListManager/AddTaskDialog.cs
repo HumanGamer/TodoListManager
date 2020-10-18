@@ -18,14 +18,25 @@ namespace TodoListManager
 			private set;
 		}
 
+		public TodoListItem ParentItem
+		{
+			get;
+			set;
+		}
+
 		public AddTaskDialog()
 		{
 			InitializeComponent();
+
+			ParentItem = null;
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			Item = new TodoListItem(txtText.Text, false);
+			int index = -1;
+			if (ParentItem != null)
+				index = ParentItem.SubItems.Count;
+			Item = new TodoListItem(ParentItem, index, txtText.Text, false);
 			Close();
 		}
 
